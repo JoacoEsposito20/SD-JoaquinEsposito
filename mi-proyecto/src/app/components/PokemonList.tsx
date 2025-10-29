@@ -1,83 +1,56 @@
+"use client";
 import PokemonItem from "./PokemonItem";
-import { useEffect, useState } from "react";
 import axios from "axios";
-import PokemonIten from "./PokemonItem";
-
-type abilities = {
-  ability: {name:string, url:string},
-  is_hidden:boolean,
-  slot: 1
-}
-
-type stat = {
-  base_stat: number,
-  effort: number,
-  stat: {name:string, url:string}
-}
+import {useState, useEffect} from "react"; 
 
 type pokemon = {
   name: string,
-  abilities: abilities[],
-  stats: stat[],
-  sprite: string;
+  url: string;
 }
 
 function procesarDatos(datos:any):pokemon{
   
   const nuevoPokemon:pokemon = {
     name:datos.name, 
-    abilities:datos.abilities,
-    stats:datos.stats,
-    sprite:datos.sprites.front_default
+    url:datos.url
   }
 
   return nuevoPokemon;
 }
+const limit = 30
+const url = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=0`;
 
 export default function PokemonList(){
-    const [pokemones, setPokemones] = useState<any>([]);
+  const [pokemones, setPokemones] = useState<pokemon[]>([]);
+  const [cargando, setCargando] = useState<boolean>(true);
 
-    useEffect(() => {
-    const obtenerDatos = async () => {
+  useEffect(() => {
+    const obtenerPokemones = async () => {
       try {
-        let listaURLs = []
-        
-        for(let i=1; i<=20; i++){
-          listaURLs.push(`https://pokeapi.co/api/v2/pokemon/${i}/`);
-        }
-
-        const promesasDePeticion = listaURLs.map(url => axios.get(url));
-        const respuestas = await Promise.all(promesasDePeticion);
-        const datosPokemones = respuestas.map(respuestas => respuestas.data);
-        
-        
-        const listaPokemones:pokemon[] = [];
-        datosPokemones.forEach(n => {listaPokemones.push(procesarDatos(n))});
-
-        setPokemones(listaPokemones);
-        
+        const respuestas = await axios.get(url);
+        const resultadosAPI = respuestas.data.results;
+        const pokemones:pokemon[] = resultadosAPI.map((n:pokemon) => n);
+        setPokemones(pokemones);
+        setCargando(false);
       } catch (err) {
         console.error("Error al obtener datos:", err);
       }
-    };
+    }
+    
+    obtenerPokemones();
+  },[]);
 
-    obtenerDatos();
-  }, []); 
-
-  if(pokemones.length == 0){
-    return(<div><p>Cargando...</p></div>);
-  }
-
+  if (cargando) return <p>Cargando pokemones...</p>;
   return(
-      <div>
-        <ul className="grid grid-cols-2 md:grid-cols-5 gap-2">
-        {pokemones.map((item:pokemon, index:number) => (
-          <li key={index}>
-            <PokemonItem name={item.name} abilities={item.abilities} stats={item.stats} sprite={item.sprite}></PokemonItem>
-          </li>
-        ))}
-        </ul>
-      </div>  
+    <div>
+      <ul className="grid grid-cols-2 md:grid-cols-5 gap-2">
+      {pokemones.map((item:pokemon) => (
+        <li key={item.name}>
+          <PokemonItem name={item.name}></PokemonItem>
+        </li>
+      ))}
+      </ul>
+    </div>  
   );
-  
+
 }
