@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="font-sans items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20">
       <header className="row-start-1 text-center mb-10">
-        <h1 className="text-1xl font-bold font-sans text-gray-500">Actividad 5 - Sistemas Distribuidos</h1>
+        <h1 className="text-1xl font-bold font-sans text-gray-500">Actividad 6 - Sistemas Distribuidos</h1>
         <h1 className="text-4xl font-extrabold font-sans text-blue-700 mt-2">Seleccione un Pokémon</h1>
       </header>
       <main className="container mx-auto">

@@ -35,9 +35,8 @@ export default function PokemonList(){
       <div className="flex justify-center mt-6 mb-8">
         <button
           onClick={handleLoadMore}
-          // Deshabilitamos el botón mientras se está cargando para evitar clics múltiples
           disabled={isLoading} 
-          className="px-6 py-3 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-300 disabled:bg-gray-400 transition"
+          className="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-red-300 disabled:bg-gray-400 transition"
         >
           Cargar más
         </button>
