@@ -4,7 +4,7 @@ import { useGetPokemonData } from "../hooks/UsePokemonAPI";
 import { useFavorites} from "../hooks/useFavorites";
 import { PokemonData } from "../lib/database";
 import { useState } from "react";
-import { url } from "inspector";
+// import { url } from "inspector"; // <- Importación innecesaria eliminada
 
 type Pokemon = {
   name: string,
@@ -17,20 +17,16 @@ const LOAD_MORE_AMOUNT = 10;
 export default function PokemonList(){ 
   const [limit, setLimit] = useState(INITIAL_LIMIT);
   const {data:pokemons, isLoading, isError} = useGetPokemonData(limit);
+  // useFavorites() debe ser reactivo y actualizarse al cambiar los favoritos.
   const listOfFavorites:PokemonData[] = useFavorites().data ?? [];
 
   const handleLoadMore = () =>{
     setLimit(prevLimit => prevLimit + LOAD_MORE_AMOUNT)
   }
 
-  const checkFavorites = (pokemon:Pokemon,favorites:PokemonData[]):number => {
-    favorites.forEach(n => {
-      if(n.name == pokemon.name){
-        return n.id;
-      }
-    });
-
-    return -1;
+  const checkFavorites = (pokemon:Pokemon, favorites:PokemonData[]):number => {
+    const favoriteEntry = favorites.find(n => n.name === pokemon.name);
+    return favoriteEntry ? favoriteEntry.id : -1;
   }
 
   if (isError) return <p>Error al cargar pokemons</p>
@@ -39,7 +35,12 @@ export default function PokemonList(){
       <ul className="grid grid-cols-2 md:grid-cols-5 gap-2">
       {pokemons && pokemons.map((item:Pokemon) => (
         <li key={item.name}>
-          <PokemonItem id={checkFavorites(item,listOfFavorites)} name={item.name} url = {item.url}></PokemonItem>
+          <PokemonItem 
+            // Esto se recalcula en cada render de la lista.
+            id={checkFavorites(item,listOfFavorites)} 
+            name={item.name} 
+            url = {item.url}
+          ></PokemonItem>
         </li>
       ))}
       </ul>
@@ -51,12 +52,11 @@ export default function PokemonList(){
           disabled={isLoading} 
           className="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-red-300 disabled:bg-gray-400 transition"
         >
-          Cargar más
+          {isLoading ? 'Cargando...' : 'Cargar más'}
         </button>
       </div>
 
     </div>
     
   );
-
 }

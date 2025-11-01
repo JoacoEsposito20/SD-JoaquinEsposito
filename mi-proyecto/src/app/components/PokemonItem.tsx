@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { useAddFavorite, useRemoveFavorite } from '../hooks/useFavorites';
-import { url } from 'inspector';
+import React from 'react';
 
 type PokemonProps = {
-    id:number;
+    // id > 0 si es un favorito, id <= 0 si no lo es
+    id:number; 
     name:string;
     url:string;
 }
@@ -11,34 +12,32 @@ type PokemonProps = {
 export default function PokemonItem({id,name,url}:PokemonProps){
     const addMutation = useAddFavorite();
     const removeMutation = useRemoveFavorite();
-    let isPending = false;
-    let isError = false;
-    let error = null;
+    
+    const isPending = addMutation.isPending || removeMutation.isPending;
+    const isError = addMutation.isError || removeMutation.isError;
+    const error = addMutation.error || removeMutation.error;
 
     const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (isPending) return;
+
         if(id > 0){
             removeMutation.mutate(id);
-            isPending = removeMutation.isPending;
-            isError = removeMutation.isError;
-            error = removeMutation.error;
         }else{
             addMutation.mutate({name,url})
-            isPending = addMutation.isPending;
-            isError = addMutation.isError;
-            error = addMutation.error;
         }
-        isPending = false;
     }
 
-    
-    const buttonContent = isPending ? '⏳' : (id>0 ? '⭐' : '☆');
+    // ⭐ Determinar el contenido del botón basado en el estado `id` (prop que viene de la lista)
+    const buttonContent = isPending ? '⏳' : (id > 0 ? '⭐' : '☆');
+    const isDisabled = isPending;
 
     return(
         <Link href={`/pokemon/${name}`} passHref className="block h-full">
             <main
-                className="border p-3 rounded-lg shadow-md transition-shadow duration-200 hover:shadow-xl cursor-pointer h-full"
+                className="border p-3 rounded-lg shadow-md transition-shadow duration-200 hover:shadow-xl cursor-pointer h-full flex flex-col justify-between"
                 role="button"
                 tabIndex={0}
             >
@@ -49,14 +48,17 @@ export default function PokemonItem({id,name,url}:PokemonProps){
                 {/* ⭐ Botón de Favoritos Modificado */}
                 <button
                     onClick={handleAdd}
+                    disabled={isDisabled}
+                    className="self-end" 
                     style={{ 
-                        cursor: isPending ? 'not-allowed' : 'pointer', 
+                        cursor: isDisabled ? 'not-allowed' : 'pointer', 
                         background: 'none', 
                         border: 'none', 
                         fontSize: '1.5rem',
-                        opacity: isPending ? 0.6 : 1 // Opacidad para indicar "deshabilitado"
+                        opacity: isDisabled ? 0.6 : 1, 
+                        margin: '0', padding: '0' 
                     }}
-                    title={isPending ? 'Procesando...' : (id>0 ? 'Quitar de favoritos' : 'Agregar a favoritos')}
+                    title={isDisabled ? 'Procesando...' : (id > 0 ? 'Quitar de favoritos' : 'Agregar a favoritos')}
                 >
                     {buttonContent} 
                 </button>
@@ -64,7 +66,7 @@ export default function PokemonItem({id,name,url}:PokemonProps){
                 {/* ⭐ Manejo y Muestra de Errores */}
                 {isError && (
                     <p className="text-red-500 text-sm mt-2">
-                        **Error al procesar:** {error || 'Algo salió mal.'}
+                        **Error al procesar:** {error ? String(error) : 'Algo salió mal.'}
                     </p>
                 )}
             </main>
