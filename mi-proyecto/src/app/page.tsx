@@ -1,5 +1,6 @@
 import PokemonList from "./components/PokemonList";
 import type { Metadata } from "next";
+import Prueba from "./components/prueba";
 
 export const metadata: Metadata = {
   title: "Create Next App",

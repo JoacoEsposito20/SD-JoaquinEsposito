@@ -1,7 +1,10 @@
 "use client";
 import PokemonItem from "./PokemonItem";
 import { useGetPokemonData } from "../hooks/UsePokemonAPI";
+import { useFavorites} from "../hooks/useFavorites";
+import { PokemonData } from "../lib/database";
 import { useState } from "react";
+import { url } from "inspector";
 
 type Pokemon = {
   name: string,
@@ -14,10 +17,20 @@ const LOAD_MORE_AMOUNT = 10;
 export default function PokemonList(){ 
   const [limit, setLimit] = useState(INITIAL_LIMIT);
   const {data:pokemons, isLoading, isError} = useGetPokemonData(limit);
+  const listOfFavorites:PokemonData[] = useFavorites().data ?? [];
 
   const handleLoadMore = () =>{
-
     setLimit(prevLimit => prevLimit + LOAD_MORE_AMOUNT)
+  }
+
+  const checkFavorites = (pokemon:Pokemon,favorites:PokemonData[]):number => {
+    favorites.forEach(n => {
+      if(n.name == pokemon.name){
+        return n.id;
+      }
+    });
+
+    return -1;
   }
 
   if (isError) return <p>Error al cargar pokemons</p>
@@ -26,7 +39,7 @@ export default function PokemonList(){
       <ul className="grid grid-cols-2 md:grid-cols-5 gap-2">
       {pokemons && pokemons.map((item:Pokemon) => (
         <li key={item.name}>
-          <PokemonItem name={item.name}></PokemonItem>
+          <PokemonItem id={checkFavorites(item,listOfFavorites)} name={item.name} url = {item.url}></PokemonItem>
         </li>
       ))}
       </ul>
